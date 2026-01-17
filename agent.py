@@ -1,11 +1,12 @@
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver  
-from langchain_groq import ChatGroq
+from langchain.chat_models import init_chat_model
 from langchain_community.tools import TavilySearchResults
 from langchain_core.tools import tool
 import yfinance as yf
 from dotenv import load_dotenv
-
+import os
+from langchain.agents.middleware import SummarizationMiddleware
 load_dotenv()
 
 @tool
@@ -44,20 +45,55 @@ def get_company_financials(ticker: str) -> str:
         
     return str(financials)
 
-model = ChatGroq(
-    model="moonshotai/kimi-k2-instruct-0905",
-    temperature=0.1,
-    timeout=30
+# Initialize the model with OpenRouter's base URL
+model = init_chat_model(
+
+    model="xiaomi/mimo-v2-flash:free",
+
+    model_provider="openai",
+
+    base_url="https://openrouter.ai/api/v1",
+
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+
+
 )
-web_search = TavilySearchResults(max_results=10)
+web_search = TavilySearchResults(max_results=6)
 agent = create_agent(
     model,
     tools=[web_search, get_company_financials],
     checkpointer=InMemorySaver(),  
-)
+    middleware=[
+        SummarizationMiddleware(
+            model=model,
+            trigger=("tokens", 10000),
+            keep=("messages", 10),
+        ),
+    ],
+    system_prompt="""
+    You are a financial assistant.
 
+Your job is to provide clear, concise, and user-facing answers about stocks and companies using the latest available data.
+
+Rules:
+- NEVER reveal internal reasoning, analysis, or tool deliberation.
+- Use tools (web_search, get_company_financials) when required.
+- If multiple sources disagree, choose the most reputable and recent one silently.
+- Respond in a structured, concise format.
+- Avoid speculation, uncertainty narration, or source comparison in the final answer.
+- If data may vary intraday, say "approximately".
+- Keep responses short unless the user asks for details.
+- Try to refer to latest information so call tools for getting data
+Output style:
+- Start with a one-line summary.
+- Then list key financial metrics in bullet points.
+
+    """)
 if __name__ == "__main__":
-    agent.invoke(
-        {"messages": [{"role": "user", "content": "Hi! My name is Bob."}]},
-        {"configurable": {"thread_id": "1"}},  
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "Tell me about the company Apple financials."}]},
+        {"configurable": {"thread_id": "1"}},
     )
+
+    final_answer = result["messages"][-1].content
+    print(final_answer)
