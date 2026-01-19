@@ -1,4 +1,4 @@
-# AlphaSharp Finance v1
+#  Finance v1
 
 A comprehensive financial analysis platform combining traditional stock metrics, AI-powered insights, and advanced market regime modeling using Hidden Markov Models (HMM) and Hidden Semi-Markov Models (HSMM).
 
