@@ -66,11 +66,3 @@ For regime modeling, see the HMM and HSMM API files.
 
 - Python 3.8+
 - Key dependencies: FastAPI, NumPy, Pandas, scikit-learn, hmmlearn, yfinance, LangChain, etc. (see `requirements.txt`)
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-## License
-
-[Specify license here if applicable]
