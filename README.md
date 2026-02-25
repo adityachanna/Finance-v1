@@ -234,5 +234,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Contact
 
-**Project Lead**: Aditya Channa  
+**Project Collaborators** : Aditya Channa, Madhav Kapoor
 **Repository**: [Finance-v1](https://github.com/adityachanna/Finance-v1)
+
